@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<!--声明Thymeleaf模板-->
+<html lang="en" xmlns:th="http://www.thymeleaf.org"> <!--声明当前网页为模板，模板语法来源于Thymeleaf官网-->
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher</title>
+</head>
+<body>
+    <p th:text="${name}"></p> <!--动态值，需要Thymeleaf语法解决。p的文本等于一个变量，变量需要用表达式来写。name即为从model取出来的值-->
+    <p th:text="${age}"></p> <!--在模板引擎渲染网页的时候，会获取变量放在p里-->
+</body>
+</html>
