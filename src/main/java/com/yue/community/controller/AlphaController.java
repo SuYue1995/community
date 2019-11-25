@@ -1,14 +1,17 @@
 package com.yue.community.controller;
 
 import com.yue.community.service.AlphaService;
+import com.yue.community.util.CommunityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
@@ -173,5 +176,49 @@ public class AlphaController {
         return list;
     }
 
+    //Cookie示例
+    //第一步，浏览器第一次访问服务器，服务器创建cookie给浏览器
+    @RequestMapping(path = "/cookie/set", method = RequestMethod.GET)
+    @ResponseBody
+    public String setCookie(HttpServletResponse response){
+        //创建Cookie存在Response里
+        Cookie cookie = new Cookie("code", CommunityUtil.generateUUID());//Cookie只能存储少量字符串数据，因为在两端之间来回传输，大量数据会影响性能，另外客户端只能识别字符串，无法识别其他Java类型。
+        //设置Cookie生效范围
+        //再次访问服务器时，浏览器会自动把cookie发送给服务器，指定访问哪些路径会发送cookie。有些路径不需要，浪费网络资源，使其无效
+        cookie.setPath("/community/alpha"); //cookie在该路径及其子路径下有效
+        //设置cookie生存时间
+        //cookie默认存在浏览器的内存里，关闭浏览器会被清除。设置生存时间后，cookie会被存在硬盘里，长期有效直到超过生存时间
+        cookie.setMaxAge(60 * 10);//单位为s, 设置为10min
+        //发送cookie，把cookie对象添加到response里
+        response.addCookie(cookie);
+        return  "set cookie";
+    }
 
+    //第一步，浏览器再次访问服务器，携带之前创建好的cookie
+    @RequestMapping(path = "/cookie/get", method = RequestMethod.GET)
+    @ResponseBody
+    public String getCookie(@CookieValue("code") String code){ //从众多cookies中获取key为code的值，然后赋值给code参数
+        System.out.println(code); //code加入model中带给模板即可在模板中使用
+        return "get cookie";
+    }
+
+    //session示例
+    //第一步，浏览器第一次请求访问服务器，创建session，存储数据
+    @RequestMapping(path = "/session/set", method = RequestMethod.GET)
+    @ResponseBody
+    public String setSession(HttpSession session){ //session使用和request，response，model一样，SpringMVC自动创建session。只需要声明，SpringMVC就会注入进来。
+        //Session存在服务端，可存储任何数据
+        session.setAttribute("id",1);
+        session.setAttribute("name","test");
+        return "set session";
+    }
+
+
+    @RequestMapping(path = "/session/get", method = RequestMethod.GET)
+    @ResponseBody
+    public String getSession(HttpSession session){
+        System.out.println(session.getAttribute("id"));
+        System.out.println(session.getAttribute("name"));
+        return "get session";
+    }
 }

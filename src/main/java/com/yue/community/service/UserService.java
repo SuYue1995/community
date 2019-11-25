@@ -1,6 +1,8 @@
 package com.yue.community.service;
 
+import com.yue.community.dao.LoginTicketMapper;
 import com.yue.community.dao.UserMapper;
+import com.yue.community.entity.LoginTicket;
 import com.yue.community.entity.User;
 import com.yue.community.util.CommunityConstant;
 import com.yue.community.util.CommunityUtil;
@@ -28,6 +30,9 @@ public class UserService implements CommunityConstant {
 
     @Autowired
     private TemplateEngine templateEngine;
+
+    @Autowired
+    private LoginTicketMapper loginTicketMapper;
 
     //邮件中包含激活码，激活码包含域名和项目名，所以将配置文件中的域名和项目名注入进来
     @Value("${community.path.domain}") //注入固定的值，而不是bean，用@Value注解
@@ -120,5 +125,55 @@ public class UserService implements CommunityConstant {
         }else {
             return ACTIVATION_FAILURE;
         }
+    }
+
+    //登录业务
+    public  Map<String, Object> login(String username, String password, long expiredSeconds){ //map封装多种情况的返回结果，因为登录失败有多种原因
+        Map<String, Object> map = new HashMap<>();
+        //空值判断处理
+        if (StringUtils.isBlank(username)){
+            map.put("usernameMsg", "账号不能为空");
+            return map;
+        }
+        if (StringUtils.isBlank(password)){
+            map.put("passwordMsg","密码不能为空");
+            return map;
+        }
+
+        //如果账号密码都不为空，进行合法性验证，验证账号
+        //验证账号是否存在
+        User user = userMapper.selectByName(username);
+        if (user == null){
+            map.put("usernameMsg","该账号不存在");
+            return map;
+        }
+        //验证账号是否激活
+        if (user.getStatus() == 0){
+            map.put("usernameMsg","该账号未激活");
+            return map;
+        }
+
+        //验证密码
+        //将传入的明文密码按照同样的md5进行加密，再进行比较
+        password = CommunityUtil.md5(password + user.getSalt());
+        if (!user.getPassword().equals(password)){
+            map.put("passwordMsg","密码不正确");
+            return map;
+        }
+
+        //登录成功，生成登录凭证
+        LoginTicket loginTicket = new LoginTicket();
+        loginTicket.setUserId(user.getId());
+        loginTicket.setTicket(CommunityUtil.generateUUID()); //UUID是不重复的
+        loginTicket.setStatus(0);
+        loginTicket.setExpired(new Date(System.currentTimeMillis() + expiredSeconds * 1000));
+        loginTicketMapper.insertLoginTicket(loginTicket);
+        map.put("ticket", loginTicket.getTicket());
+        return map;
+    }
+
+    //退出业务
+    public void logout(String ticket){
+        loginTicketMapper.updateStatus(ticket,1);//1表示无效
     }
 }
