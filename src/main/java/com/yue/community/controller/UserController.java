@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/user") //给这个类声明访问路径
@@ -130,5 +131,27 @@ public class UserController {
             logger.error("读取头像失败！" + e.getMessage());
         }
     }
+
+    //修改密码
+    @RequestMapping(path = "/updatePassword", method = RequestMethod.POST)
+    public String updatePassword(String oldPassword, String newPassword, Model model){
+
+        //获取当前用户
+        User user = hostHolder.getUser();
+
+        Map<String, Object> map = userService.updatePassword(user.getId(),oldPassword,newPassword);
+
+        if (map == null || map.isEmpty()){ //修改成功，跳转到登录页面，注销当前登录
+            model.addAttribute("msg","密码修改成功，请重新登录");
+            model.addAttribute("target","/logout");
+            return "/site/operate-result";
+        }else { //修改失败，显示错误信息
+            model.addAttribute("oldPasswordMsg", map.get("oldPasswordMsg"));
+            model.addAttribute("newPasswordMsg",map.get("newPasswordMsg"));
+            return "/site/setting";
+        }
+
+    }
+
 
 }
