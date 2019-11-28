@@ -28,6 +28,7 @@ public class MailClient {
             MimeMessageHelper helper = new MimeMessageHelper(message);
             helper.setFrom(from);
             helper.setTo(to);
+            helper.setSubject(subject);
             helper.setText(content, true); //如果没有第二个参数，默认content为文本内容，设置html为true，则支持html内容
             mailSender.send(helper.getMimeMessage());
         } catch (MessagingException e) { //如果存在错误异常，则记录日志

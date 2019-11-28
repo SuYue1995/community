@@ -26,25 +26,30 @@
 							<li class="nav-item ml-3 btn-group-vertical">
 								<a class="nav-link" th:href="@{/index}">首页</a>
 							</li>
-							<li class="nav-item ml-3 btn-group-vertical">
+							<!--消息部分，登录显示，没登录不显示-->
+							<li class="nav-item ml-3 btn-group-vertical" th:if="${loginUser!=null}"><!--判断model中有没有postHandle方法放入的loginUser-->
 								<a class="nav-link position-relative" href="site/letter.html">消息<span class="badge badge-danger">12</span></a>
 							</li>
-							<li class="nav-item ml-3 btn-group-vertical">
+							<!--注册、登录部分，已登录不显示，没登录显示-->
+							<li class="nav-item ml-3 btn-group-vertical" th:if="${loginUser==null}">
 								<a class="nav-link" th:href="@{/register}">注册</a> <!--Thymeleaf连接跳转-->
 							</li>
-							<li class="nav-item ml-3 btn-group-vertical">
+							<li class="nav-item ml-3 btn-group-vertical" th:if="${loginUser==null}">
 								<a class="nav-link" th:href="@{/login}">登录</a>
 							</li>
-							<li class="nav-item ml-3 btn-group-vertical dropdown">
+							<!--头像显示部分，登录显示，未登录不显示-->
+							<li class="nav-item ml-3 btn-group-vertical dropdown" th:if="${loginUser!=null}">
 								<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-									<img src="http://images.nowcoder.com/head/1t.png" class="rounded-circle" style="width:30px;"/>
+									<!--当前登录用户头像-->
+									<img th:src="${loginUser.headerUrl}" class="rounded-circle" style="width:30px;"/>
 								</a>
 								<div class="dropdown-menu" aria-labelledby="navbarDropdown">
 									<a class="dropdown-item text-center" href="site/profile.html">个人主页</a>
-									<a class="dropdown-item text-center" href="site/setting.html">账号设置</a>
+									<a class="dropdown-item text-center" th:href="@{/user/setting}">账号设置</a>
 									<a class="dropdown-item text-center" th:href="@{/logout}">退出登录</a>
 									<div class="dropdown-divider"></div>
-									<span class="dropdown-item text-center text-secondary">nowcoder</span>
+									<!--当前登录用户的用户名-->
+									<span class="dropdown-item text-center text-secondary" th:utext="${loginUser.username}">nowcoder</span><!--utext可以显示特殊符号，会解析html显示相应的效果-->
 								</div>
 							</li>
 						</ul>
