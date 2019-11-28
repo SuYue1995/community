@@ -1,5 +1,6 @@
 package com.yue.community.controller;
 
+import com.yue.community.annotation.LoginRequired;
 import com.yue.community.entity.User;
 import com.yue.community.service.UserService;
 import com.yue.community.util.CommunityUtil;
@@ -47,13 +48,16 @@ public class UserController {
     @Autowired
     private HostHolder hostHolder; //获取当前用户
 
+
     //浏览器通过以下方法访问到个人设置页面
+    @LoginRequired
     @RequestMapping(path = "/setting", method = RequestMethod.GET) //声明访问路径，访问普通页面，不提交数据用GET
     public String getSettingPage(){
         return "/site/setting";
     }
 
     //上传文件
+    @LoginRequired
     @RequestMapping(path = "/upload", method = RequestMethod.POST) //上传文件，表单的请求方法必须为POST
     public String uploadHeader(MultipartFile headerImg, Model model){ //页面传入一个文件，声明一个MultipartFile；多个文件，声明数组。Model给模板携带数据
         //判断参数传入是否为空

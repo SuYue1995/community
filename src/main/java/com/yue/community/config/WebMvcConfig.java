@@ -1,6 +1,7 @@
 package com.yue.community.config;
 
 import com.yue.community.controller.interceptor.AlphaInterceptor;
+import com.yue.community.controller.interceptor.LoginRequiredInterceptor;
 import com.yue.community.controller.interceptor.LoginTicketInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private LoginTicketInterceptor loginTicketInterceptor;//第一步：注入拦截器
 
+    @Autowired
+    private LoginRequiredInterceptor loginRequiredInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) { //利用Spring传进来的对象registry去注册拦截器
         registry.addInterceptor(alphaInterceptor) //直接这么写，拦截所有路径
@@ -25,5 +29,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
         //第二步：注册拦截器
         registry.addInterceptor(loginTicketInterceptor) //直接这么写，拦截所有路径
                 .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg");//其余所有页面都进行拦截处理，不用addPathPatterns();
-                }
+
+        registry.addInterceptor(loginRequiredInterceptor)
+                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg");//不处理静态资源，其他动态资源都处理
+    }
 }
