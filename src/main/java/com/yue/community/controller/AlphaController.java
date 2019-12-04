@@ -221,4 +221,13 @@ public class AlphaController {
         System.out.println(session.getAttribute("name"));
         return "get session";
     }
+
+    // Ajax示例
+    @RequestMapping(path = "/ajax", method = RequestMethod.POST)//页面通过异步方式向服务器提交数据，所以为POST
+    @ResponseBody // 服务器不返回网页，返回字符串
+    public String testAjax(String name, int age){
+        System.out.println(name);
+        System.out.println(age);
+        return CommunityUtil.getJSONString(0, "操作成功");
+    }
 }

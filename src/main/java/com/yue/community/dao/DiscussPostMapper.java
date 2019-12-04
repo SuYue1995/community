@@ -16,4 +16,10 @@ public interface DiscussPostMapper {
     //页数=表中总数据条数/每页数据数，所以需要一个方法可查询出表中总数据数
     int selectDiscussPostRows(@Param("userId") int userId); // userId同上。@Param()该注解是为了给参数取别名，有的参数较长，sql中麻烦可取别名简化
     // 如果该方法只有一个参数，并且在sql动态条件<if>里使用，则必须加Param注解，否则会报错。
+
+    //插入帖子，返回行数
+    int insertDiscussPost(DiscussPost discussPost);
+
+    // 根据id查询帖子详细信息
+    DiscussPost selectDiscussPostById(int id);
 }

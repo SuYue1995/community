@@ -76,7 +76,7 @@
 							<a class="nav-link" href="#">最热</a>
 						</li>
 					</ul>
-					<button type="button" class="btn btn-primary btn-sm position-absolute rt-0" data-toggle="modal" data-target="#publishModal">我要发布</button>
+					<button type="button" class="btn btn-primary btn-sm position-absolute rt-0" data-toggle="modal" data-target="#publishModal" th:if="${loginUser!=null}">我要发布</button>
 				</div>
 				<!-- 弹出框 -->
 				<div class="modal fade" id="publishModal" tabindex="-1" role="dialog" aria-labelledby="publishModalLabel" aria-hidden="true">
@@ -138,7 +138,8 @@
 						<div class="media-body">
 							<h6 class="mt-0 mb-3">
 								<!-- 帖子标题，text 按照最原始的方式显示文本，utext 可以将转移字符显示为该有的样子 -->
-								<a href="#" th:utext="${map.post.title}">备战春招，面试刷题跟他复习，一个月全搞定！</a>
+								<!--@{}自动拼接上项目名。|...|内包括常量和变量postId的组合-->
+								<a th:href="@{|/discuss/detail/${map.post.id}|}" th:utext="${map.post.title}">备战春招，面试刷题跟他复习，一个月全搞定！</a>
 								<!-- 置顶和精华需要判断，条件成立才显示“置顶/精华” -->
 								<!-- th:if="判断条件"，条件成立，span标签才显示 -->
 								<span class="badge badge-secondary bg-primary" th:if="${map.post.type==1}">置顶</span>
