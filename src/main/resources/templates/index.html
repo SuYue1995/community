@@ -151,7 +151,7 @@
 								<ul class="d-inline float-right">
 									<li class="d-inline ml-2">赞 11</li>
 									<li class="d-inline ml-2">|</li>
-									<li class="d-inline ml-2">回帖 7</li>
+									<li class="d-inline ml-2">回帖 <span th:text="${map.post.commentCount}">7</span></li>
 								</ul>
 							</div>
 						</div>						
@@ -159,7 +159,7 @@
 				</ul>
 				<!-- 分页 -->
 				<!-- 首先对整个分页区域进行处理：如果没有数据，则不显示 -->
-				<nav class="mt-5" th:if="${page.rows>0}"><!-- 判断是否有数据 page.getRows() -->
+				<nav class="mt-5" th:if="${page.rows>0}" th:fragment="pagination"><!-- 判断是否有数据 page.getRows() -->
 					<ul class="pagination justify-content-center">
 						<li class="page-item">
 							<!-- 连接为动态拼接字符串。 @{...(current=1)} 该语法会转换成 ...?current=1 -->
