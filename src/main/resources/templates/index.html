@@ -28,7 +28,7 @@
 							</li>
 							<!--消息部分，登录显示，没登录不显示-->
 							<li class="nav-item ml-3 btn-group-vertical" th:if="${loginUser!=null}"><!--判断model中有没有postHandle方法放入的loginUser-->
-								<a class="nav-link position-relative" href="site/letter.html">消息<span class="badge badge-danger">12</span></a>
+								<a class="nav-link position-relative" th:href="@{/letter/list}">消息<span class="badge badge-danger">12</span></a>
 							</li>
 							<!--注册、登录部分，已登录不显示，没登录显示-->
 							<li class="nav-item ml-3 btn-group-vertical" th:if="${loginUser==null}">
