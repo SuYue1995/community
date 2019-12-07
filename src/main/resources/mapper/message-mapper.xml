@@ -7,6 +7,10 @@
     <sql id="selectFields">
         id, from_id, to_id, conversation_id, content, status, create_time
     </sql>
+
+    <sql id="insertFields">
+        from_id, to_id, conversation_id, content, status, create_time
+    </sql>
     
     <select id="selectConversations" resultType="Message">
         select <include refid="selectFields"></include>
@@ -60,4 +64,18 @@
             and conversation_id = #{conversationId}
         </if>
     </select>
+
+    <insert id="insertMessage" parameterType="Message" keyProperty="id">
+        insert into message (<include refid="insertFields"></include>)
+        values(#{fromId},#{toId},#{conversationId},#{content},#{status},#{createTime})
+    </insert>
+
+    <update id="updateStatus">
+        update message set status = #{status}
+        where id in <!--Mybatis支持通过for each 标签去遍历集合，然后拼成一个括号里面带有多个条件，中间逗号隔开的形式-->
+        <foreach collection="ids" item="id" open="(" separator="," close=")"><!--每次遍历，用item声明一个变量id指代每次获取到的值。然后把id拼到括号里。声明：左括号开头，右括号结尾，中间逗号隔开-->
+            #{id} <!--要拼的是每次得到的循环变量id-->
+        </foreach>
+    </update>
+
 </mapper>
