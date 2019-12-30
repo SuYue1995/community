@@ -33,8 +33,6 @@ public class MessageController {
     // 私信列表
     @RequestMapping(path = "/letter/list", method = RequestMethod.GET)
     public String getLetterList(Model model, Page page){
-        Integer.valueOf("abc");
-
         //获取当前用户
         User user = hostHolder.getUser();
 

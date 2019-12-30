@@ -53,4 +53,10 @@ public class HomeController {
         model.addAttribute("discussPosts", discussPosts); //此处不需要再add page
         return "/index"; //返回模板的路径，templates/index.html
     }
+
+    // 报错时重定向到500页面
+    @RequestMapping(path = "/error", method = RequestMethod.GET)
+    public String getErrorPage(){
+        return "/error/500";
+    }
 }
