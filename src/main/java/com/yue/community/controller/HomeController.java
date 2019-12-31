@@ -4,7 +4,9 @@ import com.yue.community.entity.DiscussPost;
 import com.yue.community.entity.Page;
 import com.yue.community.entity.User;
 import com.yue.community.service.DiscussPostService;
+import com.yue.community.service.LikeService;
 import com.yue.community.service.UserService;
+import com.yue.community.util.CommunityConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,13 +19,16 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-public class HomeController {
+public class HomeController implements CommunityConstant {
 
     @Autowired
     private DiscussPostService discussPostService;
 
     @Autowired
     private UserService userService; //通过discussPostService查到数据中的userId只是Id，通过userService可以查询user的详细信息。
+
+    @Autowired
+    private LikeService likeService;
 
     @RequestMapping(path = "/index", method = RequestMethod.GET) //定义该方法的访问路径，首页index
     //该方法响应的是网页，所以不写@ResponseBody
@@ -46,6 +51,11 @@ public class HomeController {
                 map.put("post", post);
                 User user = userService.findUserById(post.getUserId());
                 map.put("user", user);
+
+                // 返回home帖子赞的数量
+                long likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId());
+                map.put("likeCount", likeCount);
+
                 discussPosts.add(map);
             }
         }
