@@ -107,7 +107,7 @@ public class DiscussPostController implements CommunityConstant {
                 // Vo中存评论
                 commentVo.put("comment", comment);
                 // Vo中存作者
-                commentVo.put("user", userService.findUserById(post.getUserId()));
+                commentVo.put("user", userService.findUserById(comment.getUserId()));
 
                 // 点赞数量
                 likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_COMMENT, comment.getId());

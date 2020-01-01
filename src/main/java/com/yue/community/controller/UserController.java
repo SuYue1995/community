@@ -2,6 +2,7 @@ package com.yue.community.controller;
 
 import com.yue.community.annotation.LoginRequired;
 import com.yue.community.entity.User;
+import com.yue.community.service.LikeService;
 import com.yue.community.service.UserService;
 import com.yue.community.util.CommunityUtil;
 import com.yue.community.util.HostHolder;
@@ -48,6 +49,8 @@ public class UserController {
     @Autowired
     private HostHolder hostHolder; //获取当前用户
 
+    @Autowired
+    private LikeService likeService;
 
     //浏览器通过以下方法访问到个人设置页面
     @LoginRequired
@@ -154,7 +157,23 @@ public class UserController {
             model.addAttribute("newPasswordMsg",map.get("newPasswordMsg"));
             return "/site/setting";
         }
+    }
 
+    // 个人主页
+    @RequestMapping(path = "/profile/{userId}", method = RequestMethod.GET)
+    public String getProfilePage(@PathVariable("userId") int userId, Model model){
+        User user = userService.findUserById(userId);
+        if (user == null){
+            throw new RuntimeException("该用户不存在");
+        }
+
+        // 将用户传给页面
+        model.addAttribute("user", user);
+        // 点赞数量
+        int likeCount = likeService.findUserLikeCount(userId);
+        model.addAttribute("likeCount", likeCount);
+
+        return "/site/profile";
     }
 
 

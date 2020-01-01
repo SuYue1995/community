@@ -44,7 +44,7 @@
 									<img th:src="${loginUser.headerUrl}" class="rounded-circle" style="width:30px;"/>
 								</a>
 								<div class="dropdown-menu" aria-labelledby="navbarDropdown">
-									<a class="dropdown-item text-center" href="site/profile.html">个人主页</a>
+									<a class="dropdown-item text-center" th:href="@{|/user/profile/${loginUser.id}|}">个人主页</a>
 									<a class="dropdown-item text-center" th:href="@{/user/setting}">账号设置</a>
 									<a class="dropdown-item text-center" th:href="@{/logout}">退出登录</a>
 									<div class="dropdown-divider"></div>
@@ -129,7 +129,7 @@
 						<!-- 接上：每次遍历得到一个map,声明变量指代当前map，在$前加上变量名 map： ，在循环内容通过map获取需要显示的数据-->
 
 						<!-- 显示用户头像 -->
-						<a href="site/profile.html">
+						<a th:href="@{|/user/profile/${map.user.id}|}">
 							<!-- th:src 表示后面包含Thymeleaf表达式，动态数据，引用变量map中user中的头像路径 -->
 							<!-- map.user = map.get("user") Thymeleaf可自动识别map是一个hashmap类型 -->
 							<!-- map.get("user") -> User -> user.getHeaderUrl 对于实体类，自定义的java bean，Thymeleaf会调用get方法调用私有属性-->
