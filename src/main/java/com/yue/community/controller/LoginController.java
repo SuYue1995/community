@@ -4,11 +4,14 @@ import com.google.code.kaptcha.Producer;
 import com.yue.community.entity.User;
 import com.yue.community.service.UserService;
 import com.yue.community.util.CommunityConstant;
+import com.yue.community.util.CommunityUtil;
+import com.yue.community.util.RedisKeyUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -24,6 +27,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 public class LoginController implements CommunityConstant {
@@ -35,6 +39,9 @@ public class LoginController implements CommunityConstant {
 
     @Autowired
     private Producer kaptchaProducer;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     //将application.properties中定义的项目名注入进来
     @Value("${server.servlet.context-path}")
@@ -91,13 +98,24 @@ public class LoginController implements CommunityConstant {
     //生成完验证码以后，服务端需要记住，登录时再次访问服务器时，验证验证码是否正确，不能存在浏览器端，容易盗取（敏感信息）
     //存在服务器端，多个请求需要使用（跨请求）。这次请求，创建验证码，存在服务端，下次登录请求时，再使用该验证码。
     //跨请求，利用cookie或session，因为是敏感数据，用session更安全
-    public void getKaptcha(HttpServletResponse response, HttpSession session){
+    public void getKaptcha(HttpServletResponse response/*, HttpSession session*/){ // * 重构此模块，不在使用Session，用Redis
         //生成验证码 需要使用配置类，产生的bean。bean通过容器获取，并注入到当前的bean之中.(在前面注入Producer)
         String text = kaptchaProducer.createText();//根据配置生成字符串
         BufferedImage image = kaptchaProducer.createImage(text); //通过字符串生成图片
 
         //将验证码存入session，后续使用
-        session.setAttribute("kaptcha", text);
+        // session.setAttribute("kaptcha", text); // * 重构，以下将验证码临时存放在redis中
+
+        // 验证码的归属
+        String kaptchaOwner = CommunityUtil.generateUUID();
+        Cookie cookie = new Cookie("kaptchaOwner", kaptchaOwner);
+        cookie.setMaxAge(60); // 验证码的生存时间为60s
+        cookie.setPath(contextPath);
+        response.addCookie(cookie);
+        // 将验证码存入redis
+        String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+        redisTemplate.opsForValue().set(redisKey, text, 60, TimeUnit.SECONDS); // （redisKey，验证码） 有效时间60s
+
         //将图片输出给浏览器
         response.setContentType("image/png"); //声明给浏览器返回数据的格式
         try {
@@ -109,11 +127,19 @@ public class LoginController implements CommunityConstant {
         }
     }
 
+    // * 重构此模块，从redis获取验证码，不再使用session
     @RequestMapping(path = "/login", method = RequestMethod.POST) // 和之前getLoginPage方法路径/login相同，请求方式method不同即可区分，可行。处理表单提交的数据，用post请求
     public String login(String username, String password, String code, boolean rememberme, Model model,//表单传入的参数: 账号，密码，验证码，记住我勾选。返回响应需要Model
-                        HttpSession session, HttpServletResponse response){ //从session获取之前存入的验证码。如果登录成功，需要将ticket发放给客户端用cookie保存
+                        /*HttpSession session,*/ HttpServletResponse response,//从session获取之前存入的验证码。如果登录成功，需要将ticket发放给客户端用cookie保存。
+                        @CookieValue("kaptchaOwner") String kaptchaOwner){ // * 重构 添加cookie参数，获取redis的key
         //先判断验证码是否正确，直接在表现层无需业务层判断
-        String kaptcha = (String) session.getAttribute("kaptcha");
+        // String kaptcha = (String) session.getAttribute("kaptcha");
+        String kaptcha = null;
+        if (StringUtils.isNotBlank(kaptchaOwner)){ //  如果取不到参数，则返回登录页面，显示“验证码不正确”
+            String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+            kaptcha = (String) redisTemplate.opsForValue().get(redisKey);
+        }
+        // 从redis中获取kaptcha，需要key，key存储在cookie中，需要添加cookie参数从中取值
         if (StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code) || !kaptcha.equalsIgnoreCase(code)){ //任一为空或者不匹配，错误。不区分大小写
             model.addAttribute("codeMsg","验证码不正确");
             System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");

@@ -4,6 +4,7 @@ import com.yue.community.entity.LoginTicket;
 import org.apache.ibatis.annotations.*;
 
 @Mapper //表示该类是一个数据访问的对象，需要容器来管理
+@Deprecated // redis优化存储登录凭证，声明该组件不再使用
 public interface LoginTicketMapper {
 
     @Insert({ //@Insert注解，将{}内的多个字符串拼成一条sql语句
