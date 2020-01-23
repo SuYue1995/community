@@ -1,7 +1,12 @@
 package com.yue.community.controller;
 
 import com.yue.community.entity.Comment;
+import com.yue.community.entity.DiscussPost;
+import com.yue.community.entity.Event;
+import com.yue.community.event.EventProducer;
 import com.yue.community.service.CommentService;
+import com.yue.community.service.DiscussPostService;
+import com.yue.community.util.CommunityConstant;
 import com.yue.community.util.HostHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -13,13 +18,19 @@ import java.util.Date;
 
 @Controller
 @RequestMapping(path = "/comment")
-public class CommentController {
+public class CommentController implements CommunityConstant{
 
     @Autowired
     private CommentService commentService;
 
     @Autowired
     private HostHolder hostHolder;
+
+    @Autowired
+    private EventProducer eventProducer;
+
+    @Autowired
+    private DiscussPostService discussPostService;
 
     // 处理新增评论的请求
     @RequestMapping(path = "/add/{discussPostId}", method = RequestMethod.POST)
@@ -30,6 +41,23 @@ public class CommentController {
         comment.setStatus(0);
         comment.setCreateTime(new Date());
         commentService.addComment(comment);
+
+        //  触发评论事件
+        Event event = new Event()
+                .setTopic(TOPIC_COMMENT)
+                .setUserId(hostHolder.getUser().getId())
+                .setEntityType(comment.getEntityType())
+                .setEntityId(comment.getEntityId())
+                .setData("postId", discussPostId); // 因为系统消息需要链接到帖子页面，所以需要存入帖子id到map中
+        if (comment.getEntityType() == ENTITY_TYPE_POST){ // 如果是评论帖子，则传入帖子的userId
+            DiscussPost target = discussPostService.findDiscussPostById(comment.getEntityId());
+            event.setEntityUserId(target.getUserId());
+        }else if (comment.getEntityType() == ENTITY_TYPE_COMMENT){ // 如果评论的是评论
+            Comment target = commentService.findCommentById(comment.getEntityId());
+            event.setEntityUserId(target.getUserId());
+        }
+        // 调用生产者，处理事件，发送消息
+        eventProducer.fireEvent(event); // 直接丢掉队列中，线程逐个处理；继续处理下面的业务
 
         return "redirect:/discuss/detail/" + discussPostId;
     }

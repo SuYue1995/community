@@ -1,7 +1,9 @@
 package com.yue.community.controller;
 
+import com.yue.community.entity.Event;
 import com.yue.community.entity.Page;
 import com.yue.community.entity.User;
+import com.yue.community.event.EventProducer;
 import com.yue.community.service.FollowService;
 import com.yue.community.service.UserService;
 import com.yue.community.util.CommunityConstant;
@@ -29,6 +31,9 @@ public class FollowController implements CommunityConstant{
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     // 关注，异步请求，当前页面不刷新
     @RequestMapping(path = "/follow", method = RequestMethod.POST)
     @ResponseBody // 异步请求
@@ -36,6 +41,16 @@ public class FollowController implements CommunityConstant{
 
         User user = hostHolder.getUser();
         followService.follow(user.getId(), entityType, entityId);
+
+        // 触发关注事件
+        Event event = new Event()
+                .setTopic(TOPIC_FOLLOW)
+                .setUserId(hostHolder.getUser().getId())
+                .setEntityType(entityType)
+                .setEntityId(entityId)
+                .setEntityUserId(entityId); // 因为目前业务只能关注用户，所以entityUserId=entityId
+        eventProducer.fireEvent(event);
+
         // 异步请求，给页面返回json
         return CommunityUtil.getJSONString(0, "已关注！");
     }

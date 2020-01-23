@@ -1,7 +1,7 @@
-function like(btn, entityType, entityId, entityUserId){
+function like(btn, entityType, entityId, entityUserId, postId){
     $.post(
         CONTEXT_PATH + "/like", // 功能的访问路径
-        {"entityType": entityType, "entityId": entityId, "entityUserId":entityUserId}, // 携带的参数
+        {"entityType": entityType, "entityId": entityId, "entityUserId":entityUserId, "postId": postId}, // 携带的参数
         function (data) { // 处理返回的数据
             data = $.parseJSON(data);
             if (data.code == 0){ //接受请求成功
