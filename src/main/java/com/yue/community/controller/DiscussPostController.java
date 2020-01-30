@@ -1,9 +1,7 @@
 package com.yue.community.controller;
 
-import com.yue.community.entity.Comment;
-import com.yue.community.entity.DiscussPost;
-import com.yue.community.entity.Page;
-import com.yue.community.entity.User;
+import com.yue.community.entity.*;
+import com.yue.community.event.EventProducer;
 import com.yue.community.service.CommentService;
 import com.yue.community.service.DiscussPostService;
 import com.yue.community.service.LikeService;
@@ -40,6 +38,9 @@ public class DiscussPostController implements CommunityConstant {
     @Autowired
     private LikeService likeService;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     //增加帖子请求，异步请求
     @RequestMapping(path = "/add", method = RequestMethod.POST)
     @ResponseBody //返回的是字符串，不是网页
@@ -57,6 +58,17 @@ public class DiscussPostController implements CommunityConstant {
         post.setContent(content);
         post.setCreateTime(new Date());
         discussPostService.addDiscussPost(post);
+
+        // 触发发帖事件，将新发布的帖子存到es服务器
+        // 创建事件对象
+        Event event = new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(user.getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityId(post.getId());
+        // 触发事件
+        eventProducer.fireEvent(event);
+
 
         // 直接返回JSON字符串。 报错的情况，将来统一进行处理
         return CommunityUtil.getJSONString(0, "发布成功");

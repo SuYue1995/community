@@ -59,6 +59,19 @@ public class CommentController implements CommunityConstant{
         // 调用生产者，处理事件，发送消息
         eventProducer.fireEvent(event); // 直接丢掉队列中，线程逐个处理；继续处理下面的业务
 
+        // 如果评论给帖子，触发发帖事件，将修改的帖子传到es服务器覆盖原来的数据
+        if (comment.getEntityType() == ENTITY_TYPE_POST){
+            // 创建事件对象
+            event = new Event()
+                    .setTopic(TOPIC_PUBLISH)
+                    .setUserId(comment.getUserId())
+                    .setEntityType(ENTITY_TYPE_POST)
+                    .setEntityId(discussPostId);
+            // 触发事件
+            eventProducer.fireEvent(event);
+        }
+
+
         return "redirect:/discuss/detail/" + discussPostId;
     }
 }

@@ -32,7 +32,7 @@
         </if>
     </select>
 
-    <insert id="insertDiscussPost" parameterType="DiscussPost"> <!--参数为DiscussPost实体-->
+    <insert id="insertDiscussPost" parameterType="DiscussPost" keyProperty="id"> <!--参数为DiscussPost实体-->
         insert into discuss_post(<include refid="insertFields"></include>)
         values(#{userId}, #{title}, #{content}, #{type}, #{status}, #{createTime}, #{commentCount}, #{score})
     </insert>
