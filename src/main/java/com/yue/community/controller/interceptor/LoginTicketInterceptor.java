@@ -6,6 +6,10 @@ import com.yue.community.service.UserService;
 import com.yue.community.util.CookieUtil;
 import com.yue.community.util.HostHolder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -45,6 +49,13 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
                 //把数据存在一个地方，让多线程并发访问没有问题，需要考虑线程隔离，即每个线程单独存一份，不互相干扰，使用ThreadLocal解决此问题
                 //调用封装好的HostHolder工具去持有用户，将数据存放在当前线程的map里，请求处理完之前线程都在；请求处理完，服务器向浏览器做出相应之后，线程被销毁。
                 hostHolder.setUser(user);
+
+                // 构建用户认证的结果，并通过并通过存入SecurityContextHolder存入SecurityContext，便于Security进行授权
+                Authentication authentication = new UsernamePasswordAuthenticationToken(
+                        // 三个参数：principal：认证的主要信息，一般为user；credentials：证书，账号密码模式下为密码；authorities：权限
+                        user, user.getPassword(), userService.getAuthorities(user.getId()));
+                // 构造完认证结果，将其存储在SecurityContext里
+                SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
             }
         }
         return true;
@@ -64,5 +75,6 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         hostHolder.clear();
+        SecurityContextHolder.clearContext();
     }
 }

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -167,6 +168,7 @@ public class LoginController implements CommunityConstant {
     @RequestMapping(path = "/logout", method = RequestMethod.GET)//不需要处理表单提交数据，所以用GET
     public String logout(@CookieValue("ticket") String ticket){ //退出时会自动传入cookie，利用@CookieValue注解得到cookie
         userService.logout(ticket);
+        SecurityContextHolder.clearContext();
         return "redirect:/login"; //重定向到登录页面， 我们有两个/login路径，默认为GET请求路径
     }
 }

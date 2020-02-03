@@ -3,6 +3,13 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<!--	&lt;!&ndash;访问该页面时，在此处生成CSRF令牌。&ndash;&gt;-->
+<!--	&lt;!&ndash;引入security后，每次请求中都会有一个_csrf对象，通过该对象获取token&ndash;&gt;-->
+<!--	<meta name="_csrf" th:content="${_csrf.token}">-->
+<!--	&lt;!&ndash;没有表单，通过请求的消息头传递token，消息有是key-value，token是value&ndash;&gt;-->
+<!--	<meta name="_csrf_header" th:content="${_csrf.headerName}">-->
+
 	<link rel="icon" href="https://static.nowcoder.com/images/logo_87_87.png"/>
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" crossorigin="anonymous">
 	<link rel="stylesheet" th:href="@{/css/global.css}" />

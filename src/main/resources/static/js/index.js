@@ -5,6 +5,14 @@ $(function(){
 function publish() {
 	$("#publishModal").modal("hide");//点击“发布”时，隐藏填写帖子内容的对话框
 
+	// // 发送请求之前，将CSRF令牌设置到请求的消息头中
+	// var token = $("meta[name='_csrf']").attr("content"); // 获取名为_csrf的meta元素的content属性值
+	// var header = $("meta[name='_csrf_header']").attr("content");
+	// $(document).ajaxSend(function (e, xhr, options) { // xhr为发送异步请求的核心对象，通过该对象设置header
+	// 	xhr.setRequestHeader(header, token); // 头是header，值是token
+	// }); // 在发送请求之前，对整个请求的参数做设置
+
+
 	//获取标题和内容
 	var title = $("#recipient-name").val();//$("#id")jQuery id选择器，选中id为recipient-name的文本框，.val()得到文本框中的值
 	var content = $("#message-text").val();
