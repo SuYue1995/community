@@ -1,9 +1,6 @@
 package com.yue.community.config;
 
-import com.yue.community.controller.interceptor.AlphaInterceptor;
-import com.yue.community.controller.interceptor.LoginRequiredInterceptor;
-import com.yue.community.controller.interceptor.LoginTicketInterceptor;
-import com.yue.community.controller.interceptor.MessageInterceptor;
+import com.yue.community.controller.interceptor.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -22,6 +19,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 //    private LoginRequiredInterceptor loginRequiredInterceptor;
 
     @Autowired
+    private DataInterceptor dataInterceptor;
+
+    @Autowired
     private MessageInterceptor messageInterceptor;
 
     @Override
@@ -38,6 +38,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 //                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg");//不处理静态资源，其他动态资源都处理
 
         registry.addInterceptor(messageInterceptor)
+                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg");//不处理静态资源，其他动态资源都处理
+
+        registry.addInterceptor(dataInterceptor)
                 .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg");//不处理静态资源，其他动态资源都处理
     }
 }
