@@ -132,7 +132,7 @@ public class AlphaService {
     }
 
     // @Scheduled注解定时任务，延迟10m，频率1m。自动调用，无需主动调用
-    @Scheduled(initialDelay = 10000, fixedRate = 1000)
+//    @Scheduled(initialDelay = 10000, fixedRate = 1000)
     public void execute2(){
         logger.debug("execute2");
     }

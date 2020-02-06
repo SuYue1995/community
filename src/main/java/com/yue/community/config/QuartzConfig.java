@@ -1,6 +1,7 @@
 package com.yue.community.config;
 
 import com.yue.community.quartz.AlphaJob;
+import com.yue.community.quartz.PostScoreRefreshJob;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.springframework.context.annotation.Bean;
@@ -43,6 +44,29 @@ public class QuartzConfig {
         factoryBean.setName("alphaTrigger");
         factoryBean.setGroup("alphaTriggerGroup");
         factoryBean.setRepeatInterval(3000); // 重复间隔，每3s执行一次。
+        factoryBean.setJobDataMap(new JobDataMap()); // Trigger底层存储job一些状态，可使用默认类型JobDataMap存储
+        return factoryBean;
+    }
+
+    // 刷新帖子分数任务
+    @Bean
+    public JobDetailFactoryBean postScoreRefreshJobDetail(){
+        JobDetailFactoryBean factoryBean = new JobDetailFactoryBean();
+        factoryBean.setJobClass(PostScoreRefreshJob.class); // 声明管理Bean的类型
+        factoryBean.setName("postScoreRefreshJob"); // Job名字，不可重复
+        factoryBean.setGroup("communityJobGroup"); // 任务组名，多个任务可同属一组
+        factoryBean.setDurability(true); // 声明任务持久保存，即使任务不再运行，也存着
+        factoryBean.setRequestsRecovery(true); // 任务可恢复
+        return factoryBean;
+    }
+
+    @Bean
+    public SimpleTriggerFactoryBean postScoreRefreshTrigger(JobDetail postScoreRefreshJobDetail){ // 初始化trigger依赖于JobDetail，注入参数
+        SimpleTriggerFactoryBean factoryBean = new SimpleTriggerFactoryBean();
+        factoryBean.setJobDetail(postScoreRefreshJobDetail); // JobDetailFactoryBean/JobDetail 可以有多个实例，通过名字进行区分，两者之间需要同名对应
+        factoryBean.setName("postScoreRefreshTrigger");
+        factoryBean.setGroup("communityTriggerGroup");
+        factoryBean.setRepeatInterval(1000 * 60 * 5); // 重复间隔，每5m执行一次。
         factoryBean.setJobDataMap(new JobDataMap()); // Trigger底层存储job一些状态，可使用默认类型JobDataMap存储
         return factoryBean;
     }

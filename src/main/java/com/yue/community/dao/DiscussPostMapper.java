@@ -9,7 +9,8 @@ import java.util.List;
 @Mapper
 public interface DiscussPostMapper {
 
-    List<DiscussPost> selectDiscussPosts(int userId, int offset, int limit); //首页显示所有的帖子，无需userId。将来发开个人主页功能，“我发布的帖子”调用该方法，传入userId。
+    // orderMode 排序模式：默认0,1：按热度排
+    List<DiscussPost> selectDiscussPosts(int userId, int offset, int limit, int orderMode); //首页显示所有的帖子，无需userId。将来发开个人主页功能，“我发布的帖子”调用该方法，传入userId。
     //当userId为0时，就不管它，不把这个条件拼到sql语句中；当userId为正常值时，将其拼到sql中。因此实现该方法sql为动态sql，时加时不加。
     //分页功能：sql,limit关键字后面有两个参数，一个是这一页起始行的行号offset，另一个是这一页最多显示多少条数据limit。
 
@@ -32,4 +33,6 @@ public interface DiscussPostMapper {
     // 修改帖子状态
     int updateStatus(int id, int status);
 
+    // 修改帖子分数
+    int updateScore(int id, double score);
 }

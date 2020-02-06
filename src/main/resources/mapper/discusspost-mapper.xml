@@ -19,7 +19,12 @@
         <if test="userId!=0">
             and user_id = #{userId} <!-- 字段，属性 -->
         </if>
-        order by type desc, create_time desc <!-- 0-普通帖，1-精华帖，倒序排列讲精华帖置顶, 创建时间倒序，新帖在前 -->
+        <if test="orderMode == 0">
+            order by type desc, create_time desc <!-- 0-普通帖，1-精华帖，倒序排列讲精华帖置顶, 创建时间倒序，新帖在前 -->
+        </if>
+        <if test="orderMode == 1">
+            order by type desc, score desc, create_time desc <!-- 按热度排序 -->
+        </if>
         limit #{offset}, #{limit} <!-- 分页 -->
     </select>
 
@@ -53,6 +58,10 @@
 
     <update id="updateStatus">
         update discuss_post set status = #{status} where id = #{id}
+    </update>
+
+    <update id="updateScore">
+        update discuss_post set score = #{score} where id = #{id}
     </update>
 
 </mapper>

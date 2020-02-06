@@ -9,7 +9,9 @@ import com.yue.community.service.UserService;
 import com.yue.community.util.CommunityConstant;
 import com.yue.community.util.CommunityUtil;
 import com.yue.community.util.HostHolder;
+import com.yue.community.util.RedisKeyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,6 +43,9 @@ public class DiscussPostController implements CommunityConstant {
     @Autowired
     private EventProducer eventProducer;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     //增加帖子请求，异步请求
     @RequestMapping(path = "/add", method = RequestMethod.POST)
     @ResponseBody //返回的是字符串，不是网页
@@ -68,6 +73,10 @@ public class DiscussPostController implements CommunityConstant {
                 .setEntityId(post.getId());
         // 触发事件
         eventProducer.fireEvent(event);
+
+        // 计算帖子分数
+        String redisKey = RedisKeyUtil.getPostScoreKey();
+        redisTemplate.opsForSet().add(redisKey, post.getId());
 
 
         // 直接返回JSON字符串。 报错的情况，将来统一进行处理
@@ -202,6 +211,10 @@ public class DiscussPostController implements CommunityConstant {
                 .setEntityType(ENTITY_TYPE_POST)
                 .setEntityId(id);
         eventProducer.fireEvent(event);
+
+        // 计算帖子分数
+        String redisKey = RedisKeyUtil.getPostScoreKey();
+        redisTemplate.opsForSet().add(redisKey, id);
 
         return CommunityUtil.getJSONString(0);
     }
