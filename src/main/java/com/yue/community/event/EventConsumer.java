@@ -12,9 +12,11 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +34,14 @@ public class EventConsumer implements CommunityConstant {
 
     @Autowired
     private ElasticsearchService elasticsearchService;
+
+    // 生成图片命令
+    @Value("${wk.image.command}")
+    private String wkImagecommand;
+
+    // 生成图片存放位置
+    @Value("${wk.image.storage}")
+    private String wkImageStorage;
 
     // 方法 <--> 主题，多对多关系。可以一个方法处理一个主题，多个主题。一个主题被多个方法处理等等
     // 因为对于点赞、关注、回复三类，系统发送的消息相似，所有在一个方法内处理
@@ -109,5 +119,33 @@ public class EventConsumer implements CommunityConstant {
         elasticsearchService.deleteDiscussPost(event.getEntityId());
     }
 
+    // 消费分享事件
+    @KafkaListener(topics = TOPIC_SHARE)
+    public void handleShareMessage(ConsumerRecord record){
+        if (record == null){
+            logger.error("消息内容为空");
+            return;
+        }
+        // 将json字符串恢复为event对象
+        Event event = JSONObject.parseObject(record.value().toString(), Event.class);
+        if (event == null){
+            logger.error("消息格式错误");
+            return;
+        }
+
+        String htmlUrl = (String) event.getData().get("htmlUrl");
+        String fileName = (String) event.getData().get("fileName");
+        String suffix = (String) event.getData().get("suffix");
+
+        // 拼命令
+        String cmd = wkImagecommand + " --quality 75 " + htmlUrl + " " + wkImageStorage + "/" + fileName + suffix;
+
+        try {
+            Runtime.getRuntime().exec(cmd);
+            logger.info("生成长图成功：" + cmd);
+        } catch (IOException e) {
+            logger.error("生成长图失败：" + e.getMessage());
+        }
+    }
 
 }
