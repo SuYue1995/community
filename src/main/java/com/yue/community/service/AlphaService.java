@@ -6,7 +6,11 @@ import com.yue.community.dao.UserMapper;
 import com.yue.community.entity.DiscussPost;
 import com.yue.community.entity.User;
 import com.yue.community.util.CommunityUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -23,6 +27,8 @@ import java.util.Date;
 @Service // 希望该Bean被容器管理，业务组件由@Service注解
 //@Scope("prototype") // 作用范围，多个实例
 public class AlphaService {
+
+    private Logger logger = LoggerFactory.getLogger(AlphaService.class);
 
     @Autowired
     private AlphaDao alphaDao; //处理查询业务时调用
@@ -117,5 +123,17 @@ public class AlphaService {
                 return "ok";
             }
         });
+    }
+
+    // @Async让该方法在多线程环境下，被异步调用。启动一个线程运行该方法，和主线程并发执行
+    @Async
+    public void execute1(){
+        logger.debug("execute1");
+    }
+
+    // @Scheduled注解定时任务，延迟10m，频率1m。自动调用，无需主动调用
+    @Scheduled(initialDelay = 10000, fixedRate = 1000)
+    public void execute2(){
+        logger.debug("execute2");
     }
 }
