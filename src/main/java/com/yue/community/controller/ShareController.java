@@ -44,6 +44,9 @@ public class ShareController implements CommunityConstant {
     @Value("${wk.image.storage}")
     private String wkImageStorage;
 
+    @Value("${qiniu.bucket.share.url}")
+    private String shareBucketUrl;
+
     @RequestMapping(path = "/share", method = RequestMethod.GET)
     @ResponseBody
     public String share(String htmlUrl){ // 实际中，分享的功能需要传入，根据功能生成图片。根据功能找到功能对应的模板的路径
@@ -60,10 +63,13 @@ public class ShareController implements CommunityConstant {
 
         // 返回访问路径
         Map<String, Object> map = new HashMap<>();
-        map.put("shareUrl", domain + contextPath + "/share/image/" + fileName);
+//        map.put("shareUrl", domain + contextPath + "/share/image/" + fileName);
+        // 返回云服务器的url
+        map.put("shareUrl", shareBucketUrl + "/" + fileName);
         return CommunityUtil.getJSONString(0, null, map);
     }
 
+    // 废弃：该方法从本地读取长图传给客户端，现改为从云服务器中读取图片
     // 获取长图
     @RequestMapping(path = "/share/image/{fileName}", method = RequestMethod.GET)
     public void getShareImage(@PathVariable("fileName") String fileName, HttpServletResponse response){

@@ -1,5 +1,7 @@
 package com.yue.community.controller;
 
+import com.qiniu.util.Auth;
+import com.qiniu.util.StringMap;
 import com.yue.community.annotation.LoginRequired;
 import com.yue.community.entity.User;
 import com.yue.community.service.FollowService;
@@ -18,6 +20,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -57,14 +60,48 @@ public class UserController implements CommunityConstant {
     @Autowired
     private FollowService followService;
 
+    @Value("${qiniu.key.aceess}")
+    private String accessKey;
+
+    @Value("${qiniu.key.secret}")
+    private String secretKey;
+
+    @Value("${qiniu.bucket.header.name}")
+    private String headerBucketName;
+
+    @Value("${qiniu.bucket.header.url}")
+    private String headerBucketUrl;
+
     //浏览器通过以下方法访问到个人设置页面
     @LoginRequired
     @RequestMapping(path = "/setting", method = RequestMethod.GET) //声明访问路径，访问普通页面，不提交数据用GET
-    public String getSettingPage(){
+    public String getSettingPage(Model model){
+        // 打开设置头像表单的页面，生成上传凭证，把凭证写在表单中，传给模板，表单凭借凭证提交到云服务器
+        // 生成上传凭证：上传文件的名称 + 规定上传结果的响应信息
+        String fileName = CommunityUtil.generateUUID(); // 生成随机文件名。如果使用用户id，1. 会覆盖原来的头像，可能开发“查看历史头像”功能；2. 云服务器缓存，覆盖的文件不会立刻生效
+        StringMap policy = new StringMap();
+        policy.put("returnBody", CommunityUtil.getJSONString(0)); // 异步响应JSON，同步响应HTML.成功上传返回code0
+        Auth auth = Auth.create(accessKey, secretKey);
+        String uploadToken = auth.uploadToken(headerBucketName, fileName, 3600, policy);
+        model.addAttribute("uploadToken", uploadToken);
+        model.addAttribute("fileName", fileName);
         return "/site/setting";
     }
 
-    //上传文件
+    // 更新头像路径到数据库，异步
+    @RequestMapping(path = "/header/url", method = RequestMethod.POST)
+    @ResponseBody
+    public String updateHeaderUrl(String fileName){
+        if (StringUtils.isBlank(fileName)){
+            return CommunityUtil.getJSONString(1, "文件名不能为空！");
+        }
+        String url = headerBucketUrl + "/" + fileName;
+        userService.updateHeader(hostHolder.getUser().getId(),  url);
+        return CommunityUtil.getJSONString(0);
+    }
+
+    // 废弃，客户端表单上传头像到云服务器
+    //上传头像
     @LoginRequired
     @RequestMapping(path = "/upload", method = RequestMethod.POST) //上传文件，表单的请求方法必须为POST
     public String uploadHeader(MultipartFile headerImg, Model model){ //页面传入一个文件，声明一个MultipartFile；多个文件，声明数组。Model给模板携带数据
@@ -112,6 +149,7 @@ public class UserController implements CommunityConstant {
         return "redirect:/index";
     }
 
+    // 废弃，从云服务器获取头像
     //获取头像
     @RequestMapping(path = "/header/{fileName}",method = RequestMethod.GET)
     //向浏览器响应的是图片，二进制数据。通过流和response主动向浏览器输出，所以返回值为void
