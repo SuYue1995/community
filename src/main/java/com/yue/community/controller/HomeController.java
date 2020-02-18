@@ -40,7 +40,7 @@ public class HomeController implements CommunityConstant {
         // 另外它会自动把page注入到mode中，因此在Thymeleaf模板中可以直接访问page中的数据，不需要model再add一次
 
         //服务器需要设置一些信息
-        page.setRows(discussPostService.findDicussPostRows(0)); //设置总行数
+        page.setRows(discussPostService.findDiscussPostRows(0)); //设置总行数
         // 需要在路径上拼orderMode，路径返回到模板，模板用到路径，在此基础上拼分页参数。
         page.setPath("/index?orderMode=" + orderMode);//页面复用路径
 
